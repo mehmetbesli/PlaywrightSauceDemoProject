@@ -13,116 +13,110 @@ on:
         default: 'qa'
         type: choice
         options:
-          - 'qa'
-          - 'dev'
-          - 'staging'
-          - 'prod'
+          - qa
+          - dev
+          - staging
+          - prod
       browser:
-        description: 'Tarayıcı Seçimi (Browser)'
+        description: 'Tarayıcı (Browser)'
         required: true
         default: 'chromium'
         type: choice
         options:
-          - 'chromium'
-          - 'firefox'
-          - 'webkit'
-          - 'all'
+          - chromium
+          - firefox
+          - webkit
+          - all
       workers:
-        description: 'Paralel Worker Sayısı (Workers)'
-        required: false
+        description: 'Paralel İş Parçacığı Sayısı (Workers)'
+        required: true
         default: '2'
         type: string
       send_email:
-        description: 'E-posta Bildirimi Gönderilsin mi?'
+        description: 'Test Sonuçlarını E-Posta ile Gönder (Send Email)'
         required: false
         default: false
         type: boolean
 
+permissions:
+  contents: read
+
 jobs:
   test:
     name: Run Playwright E2E Tests
-    timeout-minutes: 30
+    timeout-minutes: 60
     runs-on: ubuntu-latest
 
-    env:
-      CI: 'true'
-      ENV: ${{ github.event.inputs.environment || 'qa' }}
-      BROWSER: ${{ github.event.inputs.browser || 'chromium' }}
-      WORKERS: ${{ github.event.inputs.workers || '2' }}
-      SEND_EMAIL: ${{ github.event.inputs.send_email || 'false' }}
-      RETRIES: '2'
-      SMTP_USER: ${{ secrets.SMTP_USER }}
-      SMTP_PASS: ${{ secrets.SMTP_PASS }}
-      SMTP_TO: ${{ secrets.SMTP_TO }}
-      SMTP_FROM: ${{ secrets.SMTP_FROM }}
-      SMTP_HOST: ${{ secrets.SMTP_HOST }}
-      SMTP_PORT: ${{ secrets.SMTP_PORT }}
-
     steps:
-      - name: 📥 Checkout Repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: 🟢 Setup Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
 
-      - name: 📦 Install Dependencies
-        run: npm ci || npm install
+      - name: Install Dependencies
+        run: npm ci
 
-      - name: 🎭 Install Playwright Browsers with Dependencies
+      - name: Install Playwright Browsers & OS Dependencies
+        run: npx playwright install --with-deps chromium firefox webkit
+
+      - name: Execute Playwright Tests
+        env:
+          CI: true
+          ENV: ${{ inputs.environment || 'qa' }}
+          WORKERS: ${{ inputs.workers || '2' }}
+          SEND_EMAIL: ${{ inputs.send_email || 'false' }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          SMTP_FROM: ${{ secrets.SMTP_FROM }}
+          SMTP_TO: ${{ secrets.SMTP_TO }}
         run: |
-          if [ "${{ github.event.inputs.browser }}" = "firefox" ]; then
-            npx playwright install --with-deps firefox
-          elif [ "${{ github.event.inputs.browser }}" = "webkit" ]; then
-            npx playwright install --with-deps webkit
-          elif [ "${{ github.event.inputs.browser }}" = "all" ]; then
-            npx playwright install --with-deps chromium firefox webkit
+          BROWSER_CHOICE="${{ inputs.browser || 'chromium' }}"
+          if [ "$BROWSER_CHOICE" = "all" ]; then
+            echo "Running tests on all browsers (Chromium, Firefox, WebKit)..."
+            npx playwright test
           else
-            npx playwright install --with-deps chromium
+            echo "Running tests on $BROWSER_CHOICE..."
+            npx playwright test --project=$BROWSER_CHOICE
           fi
 
-      - name: 🚀 Execute Playwright Tests
-        run: |
-          if [ "${{ github.event.inputs.browser }}" = "firefox" ]; then
-            npx playwright test --project=firefox
-          elif [ "${{ github.event.inputs.browser }}" = "webkit" ]; then
-            npx playwright test --project=webkit
-          elif [ "${{ github.event.inputs.browser }}" = "all" ]; then
-            npx playwright test --project=chromium --project=firefox
-          else
-            npx playwright test --project=chromium
-          fi
-
-      - name: 📊 Upload HTML Reports
-        uses: actions/upload-artifact@v4
+      - name: Upload HTML Test Report
         if: always()
+        uses: actions/upload-artifact@v4
         with:
-          name: playwright-html-reports
+          name: playwright-html-report
           path: reports/html/
           retention-days: 30
+          if-no-files-found: ignore
 
-      - name: 📈 Upload Excel Reports
-        uses: actions/upload-artifact@v4
+      - name: Upload Excel Test Report
         if: always()
+        uses: actions/upload-artifact@v4
         with:
-          name: playwright-excel-reports
+          name: playwright-excel-report
           path: reports/excel/
           retention-days: 30
+          if-no-files-found: ignore
 
-      - name: 📸 Upload Screenshots (On Failure)
-        uses: actions/upload-artifact@v4
+      - name: Upload Step & Execution Logs
         if: always()
-        with:
-          name: playwright-screenshots
-          path: reports/screenShot/
-          retention-days: 30
-
-      - name: 📝 Upload Run Logs
         uses: actions/upload-artifact@v4
-        if: always()
         with:
-          name: playwright-logs
+          name: playwright-execution-logs
           path: reports/logs/
           retention-days: 30
+          if-no-files-found: ignore
+
+      - name: Upload Failure Screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-failure-screenshots
+          path: reports/screenShot/
+          retention-days: 30
+          if-no-files-found: ignore
