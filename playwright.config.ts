@@ -28,10 +28,14 @@ export default defineConfig({
     {
       name: 'chromium',
       use: {
-        viewport: null,
-        launchOptions: {
-          args: ['--start-maximized'],
-        },
+        ...(Environment.isCI
+          ? { viewport: { width: 1920, height: 1080 } }
+          : {
+              viewport: null,
+              launchOptions: {
+                args: ['--start-maximized'],
+              },
+            }),
       },
     },
     {

@@ -275,8 +275,8 @@ export default class CustomHtmlReporter implements Reporter {
       });
     }
 
-    // Automatically open the report in the default browser on Windows
-    if (process.platform === 'win32') {
+    // Automatically open the report in the default browser on Windows (local runs only)
+    if (process.platform === 'win32' && !Environment.isCI) {
       exec(`start "" "${htmlFilePath}"`);
     }
   }

@@ -110,7 +110,7 @@ export class Environment {
   }
 
   public static get sendEmail(): boolean {
-    return process.env.SEND_EMAIL === 'false';
+    return process.env.SEND_EMAIL === 'true';
   }
 
   public static get smtp(): SmtpConfig {

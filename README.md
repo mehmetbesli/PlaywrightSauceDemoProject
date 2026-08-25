@@ -165,6 +165,32 @@ Geçici ağ gecikmeleri ve sayfa yüklenme dalgalanmalarından kaynaklanan hatal
 
 ---
 
+## 🤖 CI/CD Entegrasyonu (GitHub Actions Pipeline)
+
+Proje, tam teşekküllü ve özelleştirilebilir bir **GitHub Actions CI/CD Pipeline** (`.github/workflows/playwright.yml`) ile entegre edilmiştir.
+
+### 🌟 Pipeline Özellikleri:
+- **Otomatik Tetikleyiciler (Triggers):** `main` / `master` dallarına yapılan her `push` ve `pull_request` işleminde testler Ubuntu ortamında otomatik olarak koşulur.
+- **Manuel Koşum ve Parametre Seçimi (`workflow_dispatch`):**
+  - **Environment:** `qa`, `dev`, `staging`, `prod`
+  - **Browser:** `chromium`, `firefox`, `webkit`, `all`
+  - **Workers:** Paralel iş parçacığı sayısı (örn: `2`, `4`)
+  - **Send Email:** Koşum sonrası otomatik e-posta gönderimi (`true` / `false`)
+- **Artifact Arşivleme (`actions/upload-artifact`):**
+  - 📄 **playwright-html-reports:** `reports/html/`
+  - 📊 **playwright-excel-reports:** `reports/excel/`
+  - 📝 **playwright-logs:** `reports/logs/`
+  - 📸 **playwright-screenshots:** `reports/screenShot/` (Hata anı ekran görüntüleri)
+- **GitHub Secrets Entegrasyonu:** E-posta bildirimi için `SMTP_USER`, `SMTP_PASS`, `SMTP_TO`, `SMTP_FROM`, `SMTP_HOST`, `SMTP_PORT` repository secret'ları desteklenir.
+
+### 🚀 Manuel Tetikleme Adımları:
+1. GitHub reponuzda **Actions** sekmesine gidin.
+2. Sol menüden **Playwright Tests** iş akışını seçin.
+3. **Run workflow** butonuna tıklayın, istediğiniz ortamı ve tarayıcıyı seçerek testleri başlatın.
+4. Koşum tamamlandığında sayfanın altındaki **Artifacts** bölümünden tüm HTML, Excel ve Log raporlarını zip olarak indirin.
+
+---
+
 ## 📋 Kapsanan E2E Test Senaryoları
 
 * **`TC01 - Complete End-to-End Product Purchase Flow`**:
