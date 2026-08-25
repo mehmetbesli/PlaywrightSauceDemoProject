@@ -1,0 +1,25 @@
+# Node dependencies
+node_modules/
+package-lock.json
+
+# Playwright artifacts
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# Environment and IDE files
+.env
+.env.*
+.idea/
+.vscode/
+
+# Ignore dynamic runtime test run logs and reports
+reports/html/*.html
+reports/excel/*.xlsx
+reports/logs/*.log
+reports/screenShot/*.png
+
+# Keep sample showcase reports tracked for GitHub
+!sample-reports/
+!sample-reports/*
