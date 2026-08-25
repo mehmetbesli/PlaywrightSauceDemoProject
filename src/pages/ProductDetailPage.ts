@@ -33,11 +33,13 @@ export class ProductDetailPage extends BasePage {
   }
 
   /**
-   * Adds the current product to cart
+   * Adds the current product to cart and waits for cart update
    */
   public async addToCart(): Promise<void> {
-    await this.click(this.addToCartButton);
-    await this.page.waitForTimeout(1000);
-    await this.page.waitForLoadState('networkidle').catch(() => {});
+    await Promise.all([
+      this.page.waitForURL(url => url.pathname.includes('/cart'), { timeout: 10000 }).catch(() => {}),
+      this.addToCartButton.click(),
+    ]);
+    await this.page.waitForLoadState('domcontentloaded');
   }
 }

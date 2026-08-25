@@ -47,10 +47,15 @@ test.describe('E2E Purchase Flow Tests', () => {
     // 6. Open Cart and Verify Items & Subtotal
     Logger.step(6, 'Sepet sayfası açılıyor ve ara toplam kontrol ediliyor...');
     await cartPage.open();
-    const cartItemTitles = await cartPage.getItemTitles();
-    expect(
-      cartItemTitles.some(title => title.toLowerCase().includes(targetProduct.name.toLowerCase())),
-      APP_MESSAGES.ASSERTIONS.PRODUCT_IN_CART
+    await expect.poll(
+      async () => {
+        const titles = await cartPage.getItemTitles();
+        return titles.some(title => title.toLowerCase().includes(targetProduct.name.toLowerCase()));
+      },
+      {
+        message: APP_MESSAGES.ASSERTIONS.PRODUCT_IN_CART,
+        timeout: 10000,
+      }
     ).toBeTruthy();
 
     const expectedSubtotal = PriceHelper.calculateTotal(unitPrice, 1);

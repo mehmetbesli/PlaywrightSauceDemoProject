@@ -27,11 +27,14 @@ export class CartPage extends BasePage {
   }
 
   /**
-   * Navigates directly to the cart page
+   * Navigates directly to the cart page if not already there
    */
   public async open(): Promise<void> {
-    await this.goto(ROUTES.CART);
+    if (!this.page.url().includes(ROUTES.CART)) {
+      await this.goto(ROUTES.CART);
+    }
     await this.waitForPageReady();
+    await this.page.waitForLoadState('domcontentloaded');
   }
 
   /**
