@@ -5,6 +5,9 @@ on:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
+  # Günlük zamanlanmış otomatik test koşumu (Aktif etmek için aşağıdaki yorum satırlarını açabilirsiniz)
+  # schedule:
+  #   - cron: '0 6 * * *' # Her gün saat 06:00 UTC (09:00 TSİ)
   workflow_dispatch:
     inputs:
       environment:
